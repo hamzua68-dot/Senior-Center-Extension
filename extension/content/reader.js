@@ -70,8 +70,8 @@
     if (!el || highlighted === el) return;
     highlighted = el;
     savedOutline = el.style.outline; savedBg = el.style.backgroundColor;
-    el.style.outline = "4px solid #c4561a";
-    el.style.backgroundColor = "rgba(255, 214, 102, 0.45)";
+    el.style.outline = "4px solid #1f5fad";
+    el.style.backgroundColor = "rgba(252, 243, 224, 0.95)";
     el.scrollIntoView({ block: "center", behavior: "auto" });
   }
 
@@ -111,12 +111,14 @@
     root = host.attachShadow({ mode: "closed" });
     root.innerHTML = `
       <style>
-        .bar { font: 600 18px/1.4 "Segoe UI", system-ui, sans-serif; background: #1d4e89; color: #fff; padding: 10px 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; box-shadow: 0 -2px 10px rgba(0,0,0,.3); }
+        .bar { font: 600 18px/1.4 "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif; background: #ffffff; color: #1b2a41; padding: 12px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; border-top: 3px solid #1f5fad; box-shadow: 0 -4px 16px rgba(27,42,65,.15); }
         .name { font-weight: 800; margin-right: 8px; }
-        button { font: inherit; font-size: 18px; min-height: 48px; padding: 6px 14px; border-radius: 10px; border: 2px solid #fff; background: #fff; color: #1d4e89; cursor: pointer; }
-        button:focus-visible { outline: 4px solid #ffb000; outline-offset: 2px; }
-        button.close { background: transparent; color: #fff; margin-left: auto; }
-        .status { flex-basis: 100%; font-weight: 500; font-size: 16px; opacity: .95; }
+        button { font: inherit; font-size: 18px; min-height: 56px; padding: 8px 16px; border-radius: 12px; border: 2px solid #8a94a6; background: #fff; color: #1b2a41; cursor: pointer; }
+        button:hover { background: #e8f0fa; border-color: #1f5fad; }
+        button[data-a=pause] { background: #1f5fad; border-color: #1f5fad; color: #fff; }
+        button:focus-visible { outline: 3px solid #1b2a41; outline-offset: 3px; }
+        button.close { margin-left: auto; }
+        .status { flex-basis: 100%; font-weight: 500; font-size: 17px; color: #4a5568; }
       </style>
       <div class="bar" role="region" aria-label="EasyAccess reading controls">
         <span class="name">EasyAccess is reading</span>

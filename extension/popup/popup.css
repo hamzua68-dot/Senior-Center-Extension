@@ -1,24 +1,51 @@
-html { font-size: 17px; }
-html[data-text-size="small"] { font-size: 16px; }
-html[data-text-size="medium"] { font-size: 17px; }
-html[data-text-size="large"] { font-size: 19px; }
+/* Popup: answers four questions at a glance —
+   1. Which website am I on?  2. Is anything wrong?  3. Where is help?  4. Where is emergency help? */
+html { font-size: 18px; }
+html[data-text-size="small"] { font-size: 17px; }
+html[data-text-size="medium"] { font-size: 18px; }
+html[data-text-size="large"] { font-size: 20px; }
 html[data-text-size="xlarge"] { font-size: 22px; }
 
-body { width: 25rem; max-width: 780px; margin: 0; }
-.pop-header { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1rem; background: var(--surface); border-bottom: 2px solid var(--border); }
-.pop-title { font-weight: 800; font-size: 1.25rem; color: var(--brand); }
-.pop-main { padding: 0.8rem 1rem 1rem; }
-.pop-actions { display: grid; gap: 0.55rem; }
-.pop-actions .btn { justify-content: flex-start; text-align: left; min-height: 3.2rem; width: 100%; font-size: 1.05rem; }
-.pop-actions .btn-help { min-height: 3.8rem; font-size: 1.15rem; }
-.pop-actions .btn-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
-.pop-actions .btn-row-2 .btn { font-size: 0.95rem; }
-.site-status { margin-bottom: 0.8rem; }
-.site-status .verdict { padding: 0.7rem 0.8rem; gap: 0.7rem; margin: 0; border-width: 2px; }
-.site-status .verdict-icon { width: 2.2rem; height: 2.2rem; }
-.site-status .verdict-icon svg { width: 1.3rem; height: 1.3rem; }
-.site-status .verdict-title { font-size: 1.05rem; }
-.site-status p { font-size: 0.95rem; margin: 0; }
-#result .verdict { margin-top: 0.8rem; }
-#result .verdict p { font-size: 0.95rem; }
-.small { font-size: 0.9rem; color: var(--text-soft); }
+body { width: 25rem; max-width: 780px; margin: 0; background: var(--bg); }
+.pop-header { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1.1rem; background: var(--surface); border-bottom: 1.5px solid var(--border); }
+.pop-header img { border-radius: 8px; }
+.pop-title { font-weight: 750; font-size: 1.25rem; color: var(--text); }
+.pop-main { padding: 1rem 1.1rem 1.1rem; display: grid; gap: 0.9rem; }
+
+/* 1 + 2: the website and its status */
+.site-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1rem; }
+.site-label { margin: 0; color: var(--text-soft); font-size: 1rem; }
+.site-name { margin: 0 0 0.55rem; font-size: 1.3rem; font-weight: 750; word-break: break-word; line-height: 1.25; }
+.site-status { display: flex; align-items: center; gap: 0.55rem; margin: 0; font-weight: 700; font-size: 1.08rem; padding: 0.5rem 0.75rem; border-radius: 10px; border-left: 6px solid; }
+.site-status svg { width: 1.4rem; height: 1.4rem; flex: none; }
+.status-green { color: var(--safe); background: var(--safe-bg); border-color: var(--safe); }
+.status-yellow { color: var(--caution); background: var(--caution-bg); border-color: var(--caution); }
+.status-red { color: var(--danger); background: var(--danger-bg); border-color: var(--danger); }
+.status-none { color: var(--text-soft); background: var(--surface-2); border-color: var(--line); }
+.site-detail { margin: 0.55rem 0 0; font-size: 1rem; color: var(--text-soft); line-height: 1.45; }
+
+/* 3: help */
+.pop-actions { display: grid; gap: 0.6rem; }
+.pop-actions .btn { justify-content: flex-start; text-align: left; width: 100%; min-height: 56px; font-size: 1.05rem; }
+.pop-actions .btn-help { min-height: 64px; font-size: 1.18rem; }
+.group-label { margin: 0.2rem 0 -0.1rem; font-weight: 700; color: var(--text-soft); font-size: 1rem; }
+.link-btn { background: none; border: 0; padding: 0.5rem 0.2rem; font: inherit; font-size: 1rem; font-weight: 650; color: var(--brand); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: left; min-height: 44px; display: inline-flex; align-items: center; gap: 0.45rem; }
+.link-btn svg { width: 1.2rem; height: 1.2rem; }
+.link-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+/* 4: emergency + home */
+.pop-footer { display: grid; gap: 0.3rem; padding-top: 0.9rem; border-top: 1.5px solid var(--border); justify-items: center; }
+.pop-footer .btn { min-height: 56px; width: 100%; justify-content: flex-start; text-align: left; font-size: 1.02rem; }
+.two-line { display: flex; flex-direction: column; line-height: 1.2; }
+.two-line .t1 { font-size: 1.2rem; font-weight: 750; }
+.two-line .t2 { font-size: 1rem; font-weight: 500; opacity: 0.95; }
+
+#result:empty { display: none; }
+#result .verdict { margin: 0 0 0.6rem; padding: 0.9rem 1rem; }
+#result .verdict-icon { width: 2.3rem; height: 2.3rem; }
+#result .verdict-title { font-size: 1.1rem; }
+#result .verdict p { font-size: 1rem; }
+.small { font-size: 1rem; color: var(--text-soft); }
+.btn-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.6rem; }
+.btn-row-2 .btn { min-height: 56px; }
+#result .notice { margin: 0; }

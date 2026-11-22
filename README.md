@@ -8,6 +8,8 @@ It works **immediately after installing — no account, no server, no internet s
 
 ![EasyAccess home screen](docs/screenshots/02-home.png)
 
+<img src="docs/screenshots/popup-medicare.png" alt="The EasyAccess popup: you are on medicare.gov, no warning signs found, I need help, Emergency help" width="300">
+
 ## What it does
 
 | | |

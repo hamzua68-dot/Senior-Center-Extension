@@ -24,7 +24,7 @@ function busy(btn, text) {
 function unbusy(btn) { btn.disabled = false; if (btn.dataset.label) btn.innerHTML = btn.dataset.label; }
 
 function showMessage(text) {
-  $("#result").innerHTML = `<div class="notice" style="margin-top:0.8rem">${esc(text)}</div>`;
+  $("#result").innerHTML = `<div class="notice">${esc(text)}</div>`;
 }
 
 async function snapshot() {
@@ -44,30 +44,47 @@ async function render() {
   const web = isWeb(url);
   const gmail = web && /^https:\/\/mail\.google\.com\//.test(url);
 
+  // 1 + 2: which website, and are there warning signs? (icon + words + colour)
   if (web) {
     const r = E.analyzeUrl(url);
     const host = r.host.replace(/^www\./, "");
-    const body = r.level === "green"
-      ? `<p>${esc(host)}${r.official ? ` — the real ${esc(E.brandName(r.official))} website` : ""}</p>`
-      : `<p>${esc(host)}: ${esc(r.reasons[0] ? r.reasons[0].text : "")}</p>`;
-    $("#site").innerHTML = String(verdictBox(r.level, body, r.level === "green" ? "No obvious warning signs" : r.level === "red" ? "Warning: this website looks dangerous" : "Be careful on this website"));
+    const status = {
+      green: { icon: "check", text: "No warning signs found" },
+      yellow: { icon: "alert", text: "Be careful on this website" },
+      red: { icon: "x", text: "Warning signs found" },
+    }[r.level];
+    const detail = r.level === "green"
+      ? (r.official ? `This is the real ${E.brandName(r.official)} website.` : "No automatic check is perfect, so stay alert if it asks for money or personal details.")
+      : (r.reasons[0] ? r.reasons[0].text : "");
+    $("#site").innerHTML = `
+      <p class="site-label">You are on</p>
+      <p class="site-name">${esc(host)}</p>
+      <p class="site-status status-${r.level}">${icon(status.icon)} ${esc(status.text)}</p>
+      ${detail ? `<p class="site-detail">${esc(detail)}</p>` : ""}`;
   } else {
-    $("#site").innerHTML = `<div class="notice">This isn't a website, so there's nothing to check here. You can still use everything below.</div>`;
+    $("#site").innerHTML = `
+      <p class="site-label">You are on</p>
+      <p class="site-name">${esc(tab && tab.title ? tab.title : "A Chrome page")}</p>
+      <p class="site-status status-none">${icon("info")} This isn't a website, so there's nothing to check</p>`;
   }
 
+  // 3: help — the biggest button, then questions about this page
   $("#actions").innerHTML = `
-    <button class="btn btn-help" data-act="help">${icon("help")} I need help — show me what to do</button>
+    <button class="btn btn-help" data-act="help">${icon("help")} <span class="two-line"><span class="t1">I need help</span><span class="t2">Show me what to do</span></span></button>
+    ${web ? `<p class="group-label">Ask about this page</p>` : ""}
     ${gmail ? `<button class="btn btn-primary" data-act="gmail">${icon("mail")} Is this email safe?</button>` : ""}
-    <button class="btn" data-act="explain" ${web ? "" : "disabled"}>${icon("eye")} What am I looking at?</button>
-    <button class="btn" data-act="real" ${web ? "" : "disabled"}>${icon("shieldCheck")} Is this real? Is this page safe?</button>
-    <button class="btn" data-act="read" ${web ? "" : "disabled"}>${icon("speaker")} Read this page to me</button>
-    <button class="btn" data-act="shot" ${web ? "" : "disabled"}>${icon("camera")} Take a picture of my screen for help</button>
-    <div class="btn-row-2">
-      <button class="btn btn-danger" data-act="emergency">${icon("alert")} Emergency</button>
-      <button class="btn" data-act="home">${icon("home")} Open EasyAccess</button>
-    </div>`;
+    ${web ? `
+      <button class="btn" data-act="explain">${icon("eye")} What am I looking at?</button>
+      <button class="btn" data-act="real">${icon("shieldCheck")} Is this page safe?</button>
+      <button class="btn" data-act="read">${icon("speaker")} Read this page to me</button>
+      <button class="link-btn" data-act="shot">${icon("camera")} Take a picture of my screen for help</button>` : ""}`;
 
-  $("#actions").addEventListener("click", async (e) => {
+  // 4: emergency and home — always in the same place at the bottom
+  $("#footer").innerHTML = `
+    <button class="btn btn-danger" data-act="emergency">${icon("alert")} <span class="two-line"><span class="t1">Emergency help</span><span class="t2">I think I've been scammed</span></span></button>
+    <button class="link-btn" data-act="home">${icon("home")} Open the full EasyAccess</button>`;
+
+  document.querySelector(".pop-main").addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-act]");
     if (!btn || btn.disabled) return;
     const act = btn.dataset.act;
@@ -99,7 +116,7 @@ async function render() {
         return;
       }
       if (act === "shot") {
-        $("#result").innerHTML = `<div class="notice" style="margin-top:0.8rem"><p><strong>Take a picture of this page?</strong> It stays on your computer. You'll choose later whether to send it to anyone.</p>
+        $("#result").innerHTML = `<div class="notice"><p><strong>Take a picture of this page?</strong> It stays on your computer. You'll choose later whether to send it to anyone.</p>
           <p class="small">Tip: close anything private (like bank pages or messages) first.</p>
           <div class="btn-row-2"><button class="btn btn-primary" id="shot-yes">${icon("camera")} Yes, take it</button><button class="btn" id="shot-no">No</button></div></div>`;
         $("#shot-no").addEventListener("click", () => { $("#result").innerHTML = ""; });

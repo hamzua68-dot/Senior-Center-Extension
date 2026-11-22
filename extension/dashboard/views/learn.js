@@ -88,11 +88,10 @@ export default {
           ${step.picture && PICTURES[step.picture] ? html`<div class="lesson-picture">${raw(PICTURES[step.picture])}</div>` : ""}
         </div>
         <div class="lesson-nav">
-          <button type="button" class="btn btn-lg" data-act="prev" ${i === 0 ? "disabled" : ""}>${ico("back")} Back</button>
-          <button type="button" class="btn btn-lg" data-act="read">${ico("speaker")} Read aloud</button>
-          <button type="button" class="btn btn-lg" data-act="repeat">${ico("repeat")} Repeat</button>
+          <button type="button" class="btn btn-lg" data-act="prev" ${i === 0 ? "disabled" : ""}>${ico("back")} Previous step</button>
+          <button type="button" class="btn btn-lg" data-act="read">${ico("speaker")} Read this step aloud</button>
           ${i < tut.steps.length - 1
-            ? html`<button type="button" class="btn btn-primary btn-lg" data-act="next">Next ${ico("next")}</button>`
+            ? html`<button type="button" class="btn btn-primary btn-lg" data-act="next">Next step ${ico("next")}</button>`
             : html`<a class="btn btn-help btn-lg" href="#/learn">${ico("check")} I did it!</a>`}
         </div>
         <div class="btn-row" style="margin-top:1.5rem">
