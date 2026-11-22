@@ -14,9 +14,49 @@
 | Forgetting how to do tasks | Step-by-step lessons, one step per screen, with Back / Next / Repeat / Read aloud / "I'm still confused". |
 | Scams | Green / Yellow / Red verdicts with a reason for each and "what to do now". Never "guaranteed safe". |
 
-**Visual identity:** a warm cream background, deep trustworthy blue for structure, a warm orange for the main "I need help" action, and clear green / amber / red for safety results. System fonts (fast, offline, and familiar). Light, dark and high-contrast themes. There are no decorative animations, and "reduce motion" switches off every transition.
+**Visual identity:** calm and trustworthy, like a well-designed banking or healthcare app, never dark or futuristic.
+
+| Role | Colour | Contrast |
+|---|---|---|
+| Background | warm white `#f7f6f2` | — |
+| Main text | deep navy `#1b2a41` | 13.9 : 1 |
+| Primary actions | calm blue `#1f5fad` | 6.4 : 1 with white text |
+| "I need help" | warm terracotta `#a84f22` | 5.4 : 1 with white text |
+| Safe | muted green `#2e6b4a` | 6.3 : 1 |
+| Emergency / danger | clear red `#b42318` | 6.2 : 1 |
+
+- **Typeface:** Atkinson Hyperlegible Next (Braille Institute, bundled locally, SIL OFL), designed so similar letters (l/1/I, O/0) are easy to tell apart for low-vision readers. Body weight is slightly heavier than regular; headings are bold.
+- **Targets:** buttons are 56–64px tall; the help and emergency buttons are larger still.
+- **Never colour alone:** every status has an icon and words ("✓ No warning signs found", "✕ Warning signs found").
+- **Focus:** a 3px dark ring with a light gap on every control.
+- **Restraint:** light borders, very soft shadows, no gradients, glass effects or animation. Lists replace walls of cards where there are many choices.
+- Optional dark mode is a soft slate (not black), and high-contrast mode is available for low vision. Checked with axe-core: 0 WCAG 2.2 AA violations across 22 screens in all three modes.
 
 ## 2. Dashboard layout
+
+Home screen (what a first-time user sees without scrolling):
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  [logo] EasyAccess     [Home] [Bigger text] [Read] [Settings]│
+├──────────────────────────────────────────────────────────────┤
+│  Good morning!                                               │
+│  What would you like help with today?                        │
+│  ┌──────────────────────────────────┐ ┌────────────────────┐ │
+│  │ (?) I NEED HELP — show me what   │ │ /!\ Emergency help │ │
+│  │     to do                        │ │ I think I've been  │ │
+│  └──────────────────────────────────┘ │ scammed            │ │
+│                                       └────────────────────┘ │
+│  Most used                                                   │
+│  [Check before you click] [Understand my screen] [Read to me]│
+│  More ways I can help                                        │
+│  │ Help me use my computer                              →  │ │
+│  │ Help me with email                                   →  │ │
+│  │ … (find websites, connect, security, family)        →  │ │
+└──────────────────────────────────────────────────────────────┘
+```
+
+Original concept sketch:
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -47,8 +87,7 @@
 
 **Simple dashboard mode** shows only four tiles (I need help, Check before you click, Read this to me, Emergency).
 
-The **toolbar popup** (click the EasyAccess button next to the address bar) is the quick companion for the page the person is on:
-the current website's safety colour, *What am I looking at?*, *Is this real?*, *Read this page to me*, *Is this email safe?* (in Gmail), *I need help*, *Emergency*, and *Open EasyAccess*.
+The **toolbar popup** answers four questions from top to bottom: **(1) which website am I on** ("You are on medicare.gov"), **(2) are there warning signs** (icon + words + colour, with the reason), **(3) where is help** (the large "I need help" button, then *What am I looking at?*, *Is this page safe?*, *Read this page to me*, and *Is this email safe?* in Gmail), and **(4) where is emergency help** (a full-width red button, always at the bottom).
 
 ## 3. Technical architecture
 

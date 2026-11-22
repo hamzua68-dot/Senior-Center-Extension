@@ -88,9 +88,15 @@ test("first run: welcome tour opens and leads to the home dashboard", async () =
   for (let i = 0; i < 3; i++) await page.click("[data-act=next]");
   await page.click("[data-act=finish]");
   await page.waitForSelector(".tile-help");
-  const tiles = await page.$$eval(".tile-grid .tile .tile-title", (els) => els.map((e) => e.textContent));
+  // All nine sections are reachable: three big "most used" tiles + six list rows
+  const tiles = await page.$$eval(".tile-grid .tile .tile-title, .menu-row .menu-title", (els) => els.map((e) => e.textContent));
   assert.equal(tiles.length, 9);
-  assert.ok(await page.isVisible("text=Emergency help"));
+  // The most important test: "I need help" and "Emergency help" are visible without scrolling
+  for (const sel of [".tile-help", ".tile-danger"]) {
+    const box = await page.locator(sel).boundingBox();
+    assert.ok(box && box.y + box.height <= 900, `${sel} should be visible without scrolling`);
+    assert.ok(box.height >= 64, `${sel} should be a large target`);
+  }
   await shot(page, "02-home");
   await page.close();
 });

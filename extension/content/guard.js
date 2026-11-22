@@ -24,18 +24,18 @@
   const STYLE = `
     * { box-sizing: border-box; }
     .box, .backdrop { pointer-events: auto; }
-    .box { font: 500 19px/1.5 "Segoe UI", system-ui, sans-serif; color: #1c2430; background: #fff; border: 4px solid #b42318; border-radius: 16px; padding: 20px 22px; box-shadow: 0 10px 40px rgba(0,0,0,.35); max-width: 640px; }
-    .box.yellow { border-color: #8a5a00; }
+    .box { font: 500 19px/1.55 "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif; color: #1b2a41; background: #fff; border: 0; border-left: 10px solid #b42318; border-radius: 16px; padding: 20px 22px; box-shadow: 0 10px 40px rgba(0,0,0,.35); max-width: 640px; }
+    .box.yellow { border-left-color: #845400; }
     h2 { margin: 0 0 8px; font-size: 25px; color: #b42318; }
-    .yellow h2 { color: #8a5a00; }
+    .yellow h2 { color: #845400; }
     ul { margin: 6px 0 12px; padding-left: 22px; }
     li { margin-bottom: 6px; }
     .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
-    button { font: 650 19px/1.2 "Segoe UI", system-ui, sans-serif; min-height: 52px; padding: 10px 18px; border-radius: 12px; border: 2px solid #1d4e89; background: #fff; color: #1d4e89; cursor: pointer; }
-    button.primary { background: #1d4e89; color: #fff; }
-    button.quiet { border-color: #8a94a3; color: #47515f; font-size: 16px; min-height: 44px; }
-    button:focus-visible { outline: 4px solid #ffb000; outline-offset: 2px; }
-    .brand { font-weight: 800; color: #1d4e89; font-size: 15px; margin-bottom: 4px; letter-spacing: .02em; }
+    button { font: 650 19px/1.2 "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif; min-height: 58px; padding: 10px 20px; border-radius: 12px; border: 2px solid #1f5fad; background: #fff; color: #1f5fad; cursor: pointer; }
+    button.primary { background: #1f5fad; color: #fff; }
+    button.quiet { border-color: #8a94a6; color: #4a5568; font-size: 16px; min-height: 44px; }
+    button:focus-visible { outline: 3px solid #1b2a41; outline-offset: 3px; }
+    .brand { font-weight: 800; color: #1f5fad; font-size: 15px; margin-bottom: 4px; letter-spacing: .02em; }
     .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; padding: 16px; }`;
 
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
