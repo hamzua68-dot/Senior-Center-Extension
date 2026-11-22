@@ -215,6 +215,39 @@ test("Scenario 3: assistant helps find a downloaded document", async () => {
   await page.close();
 });
 
+test("machine-learning helper understands typos and learns new wording", async () => {
+  const page = await dash("#/assistant");
+  await page.click("#clear");
+  // 1. Typos and casual wording are understood
+  await page.fill("#question", "my printr wont prnt nothing");
+  await page.click("#send");
+  await page.waitForSelector("text=Ctrl key and the P key");
+  assert.ok(await page.isVisible("text=Did I understand you?"));
+  await page.click("[data-fb=yes]");
+  await page.waitForSelector("text=I'll remember that");
+
+  // 2. Something it doesn't understand: the person teaches it
+  const odd = "the paper machine is being stubborn again";
+  await page.fill("#question", odd);
+  await page.click("#send");
+  await page.waitForSelector("[data-choose]");
+  if (!(await page.$("[data-choose=print]"))) await page.click("[data-choose=__more] >> nth=-1");
+  await page.click("[data-choose=print] >> nth=-1");
+  await page.waitForSelector("text=Next time you say something like");
+
+  // 3. Asked the same way again, it now answers straight away
+  await page.fill("#question", odd);
+  await page.click("#send");
+  await page.waitForFunction(() => {
+    const helpers = document.querySelectorAll(".msg-helper");
+    return helpers[helpers.length - 1].innerText.includes("Ctrl key and the P key");
+  });
+  const learned = await sw.evaluate(async () => (await chrome.storage.local.get("intentPersonal")).intentPersonal);
+  assert.ok(learned.examples >= 2);
+  await shot(page, "17-helper-learning");
+  await page.close();
+});
+
 test("lessons go step by step with Back and Next", async () => {
   const page = await dash("#/learn/find-downloads");
   assert.match(await page.textContent(".lesson-progress"), /Step 1 of 4/);

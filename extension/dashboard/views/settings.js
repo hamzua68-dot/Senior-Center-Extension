@@ -1,6 +1,6 @@
 import { html, toast } from "../../shared/ui.js";
 import { getSettings, updateSettings, TEXT_SIZES, DEFAULT_SETTINGS } from "../../shared/settings.js";
-import { eraseAll } from "../../shared/storage.js";
+import { eraseAll, setValue } from "../../shared/storage.js";
 import { say } from "../../shared/speech.js";
 import { on, ico, sendToBackground, hasChromeApis } from "./common.js";
 
@@ -85,6 +85,7 @@ export default {
           <div class="btn-row">
             <a class="btn" href="#/privacy">${ico("info")} How EasyAccess protects your privacy</a>
             <a class="btn" href="#/family/log">${ico("list")} My sharing record</a>
+            <button type="button" class="btn" id="forget-learning">${ico("repeat")} Forget what the helper has learned</button>
             <button type="button" class="btn btn-danger" id="erase">${ico("trash")} Delete everything EasyAccess has saved</button>
           </div>
         </section>
@@ -144,6 +145,11 @@ export default {
         const data = await res.json();
         msg.textContent = res.ok ? `Connected! AI: ${data.ai ? "ready" : "not set up on the server"}. Website threat lists: ${data.safeBrowsing ? "ready" : "not set up on the server"}.` : `The server answered with a problem (${data.error || res.status}).`;
       } catch (e) { msg.textContent = "I couldn't reach that server. Check the address and that the server is running."; }
+    });
+    on(el, "click", "#forget-learning", async () => {
+      if (!confirm("Forget the words the built-in helper has learned from your answers?\n\nIt will go back to how it was when EasyAccess was installed.")) return;
+      await setValue("intentPersonal", null);
+      toast("The helper has forgotten what it learned.");
     });
     on(el, "click", "#erase", async () => {
       if (!confirm("Delete everything EasyAccess has saved on this computer?\n\nThis removes your settings, favourites, trusted people, reminders and sharing record. It can't be undone.")) return;

@@ -83,7 +83,62 @@ export const INTENTS = [
   { id: "bookmark", re: /(bookmark|favourite|favorite|save (this|a) (website|page|site))/,
     reply: "You can save websites you like. Click the star at the end of the address bar, or add it to your EasyAccess favourites so it's on your home screen.",
     actions: [{ label: "My websites", route: "#/sites" }, { label: "Bookmarks step by step", route: "#/learn/bookmark" }] },
+  { id: "sent-money", re: /(sent|paid|wired|transferred|gave) (them |him |her |someone )?(money|cash|\$)|bought gift ?cards? for/,
+    reply: "Thank you for telling me — please don't feel embarrassed, this happens to very careful people. Acting quickly helps. First step: call your bank using the number on the back of your bank card and tell them the payment was a scam. Then follow the steps on the next screen.",
+    actions: [{ label: "I sent money to someone", route: "#/emergency/sent-money" }, { label: "I bought gift cards", route: "#/emergency/gift-cards" }] },
+  { id: "remote-access", re: /(let|allowed|gave) (them|him|her|someone|a stranger) (into|access|control|connect)|(anydesk|teamviewer|remote access|controlling my (computer|mouse))/,
+    reply: "Let's make your computer safe again. First step: turn off your internet — click the Wi-Fi symbol and switch Wi-Fi off, or unplug the internet cable. Then hang up if they're still on the phone. The next screen has the rest of the steps.",
+    actions: [{ label: "Someone accessed my computer", route: "#/emergency/remote-access" }] },
+  { id: "fake-family", re: /(grandson|granddaughter|grandchild|nephew|niece).*(money|jail|trouble|help|new number)|says (he|she) is my/,
+    reply: "Please don't send any money yet. Scammers pretend to be grandchildren and can even copy voices. First step: hang up or stop replying, and call your family member on the phone number you already have for them.",
+    actions: [{ label: "Check the message", route: "#/check/message" }, { label: "I already sent money", route: "#/emergency/fake-family" }] },
+  { id: "copy-paste", re: /(copy|paste|cut and paste|copy and paste)/,
+    reply: "Copying saves retyping. First, highlight the words: hold the left mouse button at the start of the words and drag to the end. Then hold the Ctrl key and press C (Command and C on a Mac). Tell me when you've done that, and I'll show you how to paste.",
+    actions: [{ label: "Copy and paste step by step", route: "#/learn/copy-paste" }] },
+  { id: "screenshot", re: /(screen ?shot|picture of (my|the) screen|capture (my|the) screen)/,
+    reply: "You can take a picture of your screen. The easiest way: click the EasyAccess button at the top of Chrome and choose \"Take a picture of my screen for help\". For a picture of the whole screen, I can show you the keyboard keys.",
+    actions: [{ label: "Screenshot step by step", route: "#/learn/screenshot" }] },
+  { id: "save-picture", re: /(save|keep|download) (a |the |this )?(picture|photo|image)/,
+    reply: "Let's save that picture. Move your mouse over the picture and press the right mouse button. A small menu appears — click \"Save image as…\". Tell me when you see the menu.",
+    actions: [{ label: "Save a picture step by step", route: "#/learn/save-picture" }] },
+  { id: "frozen", re: /(frozen|freeze|stuck|not responding|won'?t (close|move|respond)|spinning|hung)/,
+    reply: "That's frustrating, but it's usually easy to fix. First, wait one minute — sometimes the computer is just busy. If nothing changes, close the tab by pressing Ctrl and W together (Command and W on a Mac). If the whole computer is stuck, hold the power button until it turns off, wait a moment, then turn it back on.",
+    actions: [{ label: "Understand pop-ups", route: "#/learn/popups" }] },
+  { id: "slow", re: /(slow|takes forever|sluggish|so long to load)/,
+    reply: "Let's speed things up. First, close tabs you're not using — each tab uses some of the computer's energy. Click the little × on tabs you don't need. If it's still slow, restarting the computer often helps.",
+    actions: [{ label: "Tabs step by step", route: "#/learn/new-tab" }] },
+  { id: "notifications", re: /(notification|keeps popping up|pop.?ups? in the corner|allow notifications)/,
+    reply: "Those little messages usually come from a website you once allowed. You can block them in Chrome's settings. Would you like me to show you how, step by step?",
+    actions: [{ label: "Stop notifications step by step", route: "#/learn/notifications" }] },
+  { id: "upload", re: /(upload|send (a|the) (document|file) to (a|the) website|choose file)/,
+    reply: "Let's upload your document. On the website, look for a button that says \"Upload\", \"Choose file\" or \"Browse\" and click it. A window will open showing your files. Tell me when you see it.",
+    actions: [{ label: "Upload step by step", route: "#/learn/upload" }] },
+  { id: "forms", re: /(fill (in|out)|form|boxes to type|application online)/,
+    reply: "Forms are just boxes to type in. Click inside the first box, type your answer, then press the Tab key to move to the next one. Boxes with a star (*) must be filled in. I can also explain the form you're looking at.",
+    actions: [{ label: "Forms step by step", route: "#/learn/forms" }, { label: "Explain the page I'm on", route: "#/screen" }] },
+  { id: "appointment", re: /(appointment|book (a|my) (doctor|visit)|schedule (a|my) (visit|doctor))/,
+    reply: "Many doctors and pharmacies let you book online. Go to their official website — type the address yourself — and look for a button like \"Book appointment\" or \"Schedule\". I can walk you through it.",
+    actions: [{ label: "Book an appointment step by step", route: "#/learn/appointments" }, { label: "My websites", route: "#/sites" }] },
 ];
+
+// Short, friendly names for each topic ("Did you mean…?" buttons).
+export const INTENT_LABELS = {
+  greeting: "Just saying hello", thanks: "Saying thank you", "clicked-link": "I clicked something suspicious",
+  "fake-virus": "A scary virus warning", "owe-money": "A message says I owe money", scam: "Is something a scam?",
+  "find-download": "Finding a file I downloaded", download: "Downloading a file", attach: "Attaching a picture or file to an email",
+  "understand-page": "Understanding a website", button: "What a button does", "video-call": "Video calling family",
+  "text-size": "Making text bigger", password: "Passwords", print: "Printing", wifi: "Wi-Fi and internet problems",
+  "email-help": "Help with email", "read-aloud": "Reading things aloud", family: "Asking family for help", volume: "Sound and volume",
+  tab: "Tabs and windows", bookmark: "Saving favourite websites", "sent-money": "I sent money or gift cards to someone",
+  "remote-access": "Someone got into my computer", "fake-family": "A message from a \"grandchild\" asking for help",
+  "copy-paste": "Copying and pasting", screenshot: "Taking a picture of the screen", "save-picture": "Saving a picture",
+  frozen: "The computer or page is stuck", slow: "The computer is slow", notifications: "Annoying pop-up notifications",
+  upload: "Uploading a document", forms: "Filling in a form", appointment: "Booking an appointment online",
+};
+
+export function intentById(id) {
+  return INTENTS.find((i) => i.id === id) || null;
+}
 
 export function matchIntent(text) {
   const t = String(text || "").toLowerCase().trim();
