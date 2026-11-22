@@ -12,7 +12,7 @@ It works **immediately after installing — no account, no server, no internet s
 
 | | |
 |---|---|
-| 🧡 **I need help – show me what to do** | Type or speak a question, or pick a common problem. Built-in answers work offline; the optional AI answers anything. |
+| 🧡 **I need help – show me what to do** | Type or speak a question in your own words, or pick a common problem. A built-in **machine-learning model runs inside the extension** (no internet needed): it understands everyday wording and typos across 34 topics, asks "Did you mean…?" when unsure, and **learns from your corrections** on your own computer. The optional AI answers anything. |
 | 🛡️ **Check before you click** | Paste an email, text or link → **Green / Yellow / Red** with plain reasons and what to do. Links are checked without opening them. Phone, QR code, online shop and scam-type guides. |
 | 👁️ **Understand my screen** | "What am I looking at?" explains the current page: what site it is, what it asks for, what each button does, what's risky, what to do next. Spots fake virus alerts. Optional screenshot help. |
 | ✉️ **Help me with email** | One-click "Is this email safe?" in Gmail, plain-English summaries, dates, requested actions, jargon explained, reply drafts you copy yourself. |
@@ -47,10 +47,12 @@ extension/            The Chrome extension (Manifest V3, no build step)
   engine/             Local scam engine + page explainer (also used by tests)
   content/            Read-aloud bar, optional website guard
   shared/             Design system CSS, settings, storage, speech, AI client, icons, page reader
-  data/               Lessons, website directory, emergency pathways, glossary, quiz, helper answers
+  data/               Lessons, website directory, emergency pathways, glossary, quiz, helper answers,
+                      intent-model.json (the trained helper model)
   warning/            Full-page "Stop — this website looks dangerous"
 backend/              Optional helper server (Claude API + Google Safe Browsing)
-tests/                Engine, backend and end-to-end browser tests
+tests/                Engine, classifier, backend and end-to-end browser tests
+tools/                Model training (train-intents.mjs + intent-data.mjs), icon renderer
 docs/                 Architecture, install, privacy & security, services, testing, screenshots
 ```
 
@@ -66,8 +68,9 @@ docs/                 Architecture, install, privacy & security, services, testi
 
 ```bash
 npm install && (cd backend && npm install)
-npm test            # 26 unit/integration tests
-npm run test:e2e    # 20 browser tests with the real extension
+npm test            # 33 unit/integration tests
+npm run train       # retrain the helper's machine-learning model
+npm run test:e2e    # 21 browser tests with the real extension
 ```
 
 ## Honest limitations

@@ -3,16 +3,43 @@ import { getValue, setValue, session } from "../../shared/storage.js";
 import { updateSettings } from "../../shared/settings.js";
 import { aiStatus, chat } from "../../shared/ai-client.js";
 import { listenOnce, listeningSupported, say, stopSpeaking } from "../../shared/speech.js";
-import { COMMON_PROBLEMS, matchIntent, FALLBACK_REPLY } from "../../data/assistant-knowledge.js";
+import { classify, learnExample } from "../../shared/intent-model.js";
+import { COMMON_PROBLEMS, matchIntent, intentById, INTENT_LABELS, FALLBACK_REPLY } from "../../data/assistant-knowledge.js";
 import { on, ico } from "./common.js";
 
 const WELCOME = "Hello! I'm your EasyAccess helper. Tell me what you need — in your own words. There are no silly questions, and we can go as slowly as you like.";
 
-function bubble(m) {
+let modelPromise;
+function loadModel() {
+  modelPromise = modelPromise || fetch(new URL("../../data/intent-model.json", import.meta.url)).then((r) => r.json()).catch(() => null);
+  return modelPromise;
+}
+
+function bubble(m, i) {
   const who = m.role === "user" ? "You" : "EasyAccess helper";
   const paragraphs = String(m.content).split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
   const actions = (m.actions || []).map((a) => `<a class="btn" href="${esc(a.route)}">${esc(a.label)}</a>`).join("");
-  return `<div class="msg msg-${m.role === "user" ? "user" : "helper"}"><span class="msg-who">${who}</span>${paragraphs}${actions ? `<div class="btn-row">${actions}</div>` : ""}</div>`;
+  const choices = (m.choices || []).map((c) => `<button type="button" class="btn" data-choose="${esc(c.intent)}" data-i="${i}">${esc(c.label)}</button>`).join("");
+  let feedback = "";
+  if (m.feedback && !m.feedback.done) {
+    feedback = `<div class="btn-row feedback" role="group" aria-label="Did I understand?"><span class="muted" style="align-self:center">Did I understand you?</span>
+      <button type="button" class="btn btn-quiet" data-fb="yes" data-i="${i}">${ico("check")} Yes</button>
+      <button type="button" class="btn btn-quiet" data-fb="no" data-i="${i}">${ico("x")} No, I meant something else</button></div>`;
+  } else if (m.feedback && m.feedback.note) {
+    feedback = `<p class="muted">${esc(m.feedback.note)}</p>`;
+  }
+  return `<div class="msg msg-${m.role === "user" ? "user" : "helper"}"><span class="msg-who">${who}</span>${paragraphs}${choices ? `<div class="btn-row">${choices}</div>` : ""}${actions ? `<div class="btn-row">${actions}</div>` : ""}${feedback}</div>`;
+}
+
+/** Turn a topic into a helper message. */
+function answerFor(intentId, asked, extraNote) {
+  const intent = intentById(intentId);
+  if (!intent) return { role: "assistant", content: FALLBACK_REPLY };
+  return { role: "assistant", content: (extraNote ? extraNote + "\n\n" : "") + intent.reply, actions: intent.actions, feedback: asked ? { asked, intent: intentId } : undefined };
+}
+
+function choicesFrom(ranked, n) {
+  return ranked.filter((r) => INTENT_LABELS[r.intent]).slice(0, n).map((r) => ({ intent: r.intent, label: INTENT_LABELS[r.intent] }));
 }
 
 export default {
@@ -22,10 +49,12 @@ export default {
     if (!messages.length) messages = [{ role: "assistant", content: WELCOME }];
     const status = await aiStatus();
     const snapshotInfo = await getValue("lastExplanation", null, session);
+    const model = await loadModel();
+    let personal = await getValue("intentPersonal", null);
     let busy = false;
 
     el.innerHTML = String(html`
-      ${pageHeader("I need help — show me what to do", "Type your question, press the microphone to say it, or pick a common problem below.")}
+      ${pageHeader("I need help — show me what to do", "Type your question in your own words, press the microphone to say it, or pick a common problem below.")}
       <div class="chat" id="chat" aria-live="polite" aria-label="Conversation"></div>
 
       <form class="composer" id="composer" autocomplete="off">
@@ -54,19 +83,51 @@ export default {
       <div class="notice" style="margin-top:1.5rem">
         ${status.ready
           ? html`<strong>The AI helper is on.</strong> Your questions are sent to the EasyAccess AI service to get an answer. Never type passwords, bank details or your Social Security number. <a href="#/settings">Change</a>`
-          : html`<strong>Using the built-in helper.</strong> It knows the most common problems and works without the internet. For any question at all, a family member can turn on the AI helper in <a href="#/settings">Settings</a>.`}
-        <button type="button" class="btn btn-quiet" id="clear" style="margin-top:0.6rem">${ico("trash")} Start a new conversation</button>
+          : html`<strong>Using the built-in helper.</strong> It understands everyday wording and typos, works without the internet, and learns from your answers to "Did I understand you?" — on this computer only.
+              <span id="learned"></span> For any question at all, a family member can turn on the AI helper in <a href="#/settings">Settings</a>.`}
+        <div class="btn-row" style="margin-bottom:0"><button type="button" class="btn btn-quiet" id="clear">${ico("trash")} Start a new conversation</button></div>
       </div>
     `);
 
     const chatEl = el.querySelector("#chat");
     const input = el.querySelector("#question");
+    const showLearned = () => {
+      const s = el.querySelector("#learned");
+      if (s) s.textContent = personal && personal.examples ? `So far it has learned from ${personal.examples} of your answers.` : "";
+    };
+    showLearned();
+    const save = () => setValue("assistantChat", messages.slice(-30), session);
     const drawChat = () => {
       chatEl.innerHTML = messages.map(bubble).join("");
       const last = chatEl.lastElementChild;
       last && last.scrollIntoView({ block: "nearest" });
     };
     drawChat();
+    const speakIf = (text) => { if (el.querySelector("#voice").checked) say(text); };
+
+    async function remember(asked, intentId) {
+      if (!model || !asked) return;
+      personal = learnExample(model, personal, asked, intentId);
+      await setValue("intentPersonal", personal);
+      showLearned();
+    }
+
+    function offlineReply(text) {
+      if (!model) {
+        const intent = matchIntent(text);
+        return intent ? answerFor(intent.id, null) : { role: "assistant", content: FALLBACK_REPLY };
+      }
+      const c = classify(model, text, personal);
+      if (c.confidence === "sure") return answerFor(c.top.intent, text);
+      if (c.confidence === "unsure") {
+        return { role: "assistant", asked: text, content: "I want to make sure I understand you. Which of these is closest?",
+          choices: choicesFrom(c.ranked, 3).concat({ intent: "__more", label: "Something else" }) };
+      }
+      // Not understood: try the simple keyword rules before giving up.
+      const intent = matchIntent(text);
+      if (intent) return answerFor(intent.id, text);
+      return { role: "assistant", asked: text, content: FALLBACK_REPLY, choices: [{ intent: "__more", label: "Show me the list of things I can help with" }] };
+    }
 
     async function ask(text) {
       text = text.trim();
@@ -77,33 +138,73 @@ export default {
       }
       busy = true;
       messages.push({ role: "user", content: text });
-      const intent = matchIntent(text);
-      const thinking = { role: "assistant", content: "Let me think about that…" };
-      messages.push(thinking);
-      drawChat();
-      let reply;
       const usePage = el.querySelector("#use-page") && el.querySelector("#use-page").checked;
+      let reply;
       if (status.ready) {
+        const thinking = { role: "assistant", content: "Let me think about that…" };
+        messages.push(thinking);
+        drawChat();
+        const c = model ? classify(model, text, personal) : null;
+        const actions = c && c.confidence === "sure" ? (intentById(c.top.intent) || {}).actions : undefined;
         try {
           const context = usePage && snapshotInfo ? snapshotInfo.summary : null;
-          const answer = await chat(messages.filter((m) => m !== thinking && m.content !== WELCOME).map(({ role, content }) => ({ role, content })), context);
-          reply = { role: "assistant", content: answer, actions: intent ? intent.actions : undefined };
+          const answer = await chat(messages.filter((m) => m !== thinking && m.content !== WELCOME && m.role).map(({ role, content }) => ({ role, content })), context);
+          reply = { role: "assistant", content: answer, actions };
         } catch (err) {
-          reply = intent
-            ? { role: "assistant", content: intent.reply + "\n\n(The AI helper couldn't be reached, so I used my built-in answer: " + err.message + ")", actions: intent.actions }
-            : { role: "assistant", content: err.message + " In the meantime, try one of the common problems below." };
+          reply = offlineReply(text);
+          reply.content = `(The AI helper couldn't be reached — ${err.message}) Here's my built-in answer:\n\n` + reply.content;
         }
+        messages[messages.indexOf(thinking)] = reply;
       } else if (usePage && snapshotInfo && /\b(this|the) (page|site|website|screen|button|message|pop.?up)\b|is (this|it) (real|safe|legit)/i.test(text)) {
         reply = { role: "assistant", content: snapshotInfo.summary, actions: [{ label: "See the full explanation", route: "#/screen" }] };
+        messages.push(reply);
       } else {
-        reply = intent ? { role: "assistant", content: intent.reply, actions: intent.actions } : { role: "assistant", content: FALLBACK_REPLY };
+        reply = offlineReply(text);
+        messages.push(reply);
       }
-      messages[messages.indexOf(thinking)] = reply;
-      await setValue("assistantChat", messages.slice(-30), session);
+      await save();
       busy = false;
       drawChat();
-      if (el.querySelector("#voice").checked) say(reply.content);
+      speakIf(reply.content);
     }
+
+    // "Did I understand you?"
+    on(el, "click", "[data-fb]", async (e, b) => {
+      const m = messages[+b.dataset.i];
+      if (!m || !m.feedback) return;
+      if (b.dataset.fb === "yes") {
+        m.feedback.done = true;
+        m.feedback.note = "Thank you! I'll remember that.";
+        await remember(m.feedback.asked, m.feedback.intent);
+      } else {
+        m.feedback.done = true;
+        const ranked = model ? classify(model, m.feedback.asked, personal).ranked.filter((r) => r.intent !== m.feedback.intent) : [];
+        messages.push({ role: "assistant", asked: m.feedback.asked, content: "Sorry about that — my mistake. Which of these is closest to what you meant?",
+          choices: choicesFrom(ranked, 6).concat({ intent: "__more", label: "Show me everything" }) });
+      }
+      await save();
+      drawChat();
+    });
+
+    // Picking a topic from "Did you mean…?" teaches the helper.
+    on(el, "click", "[data-choose]", async (e, b) => {
+      const m = messages[+b.dataset.i];
+      if (!m) return;
+      const choice = b.dataset.choose;
+      if (choice === "__more") {
+        m.choices = Object.entries(INTENT_LABELS).filter(([id]) => !["greeting", "thanks"].includes(id))
+          .sort((a, b2) => a[1].localeCompare(b2[1])).map(([intent, label]) => ({ intent, label }));
+        m.content = "Here's everything I can help with. Pick the one that's closest:";
+      } else {
+        m.choices = [];
+        await remember(m.asked, choice);
+        const reply = answerFor(choice, null, m.asked ? `Got it. Next time you say something like "${m.asked}", I'll know you mean: ${INTENT_LABELS[choice].toLowerCase()}.` : "");
+        messages.push(reply);
+        speakIf(reply.content);
+      }
+      await save();
+      drawChat();
+    });
 
     el.querySelector("#composer").addEventListener("submit", (e) => { e.preventDefault(); const t = input.value; input.value = ""; ask(t); });
     input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); el.querySelector("#composer").requestSubmit(); } });
@@ -115,14 +216,14 @@ export default {
       drawChat();
     });
     el.querySelector("#mic").addEventListener("click", async () => {
-      const status = el.querySelector("#mic-status");
-      status.textContent = "Listening… please speak now.";
+      const st = el.querySelector("#mic-status");
+      st.textContent = "Listening… please speak now.";
       try {
         const text = await listenOnce({ lang: settings.language, onInterim: (t) => { input.value = t; } });
-        status.textContent = "";
-        if (text) { input.value = ""; ask(text); } else status.textContent = "I didn't catch that. Please try again.";
+        st.textContent = "";
+        if (text) { input.value = ""; ask(text); } else st.textContent = "I didn't catch that. Please try again.";
       } catch (err) {
-        status.textContent = err.message;
+        st.textContent = err.message;
       }
     });
 

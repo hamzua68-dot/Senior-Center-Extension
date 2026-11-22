@@ -13,6 +13,7 @@ Everything is stored **only in Chrome on this computer** (`chrome.storage`). Not
 | Trusted people (name, relationship, email/phone, optional video link, confirmation code) | local | Until removed |
 | Sharing record (what was shared, with whom, when — not the content) | local | Until cleared (max 200 entries) |
 | Reminders, checklist ticks, emergency-step ticks | local | Until removed |
+| What the built-in helper has learned (small word-weight adjustments from "Did I understand you?" answers — not the conversation itself) | local | Until *Settings → Forget what the helper has learned* or erase |
 | Last page snapshot, screenshot, checked email/message, assistant conversation | `chrome.storage.session` | **Cleared when Chrome closes** |
 
 **Settings → Delete everything EasyAccess has saved** erases all of it and removes the optional all-sites permission.

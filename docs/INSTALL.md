@@ -105,7 +105,7 @@ Useful places to extend:
 | A website in the directory | `extension/data/sites.js` — **only official addresses you have verified** |
 | An emergency pathway | `extension/data/emergency.js` |
 | A scam rule | `RULES` in `extension/engine/scam-engine.js`, plus a test in `tests/engine.test.mjs` |
-| A built-in helper answer | `INTENTS` in `extension/data/assistant-knowledge.js` |
+| A built-in helper topic | Answer + label in `extension/data/assistant-knowledge.js`, example phrases in `tools/intent-data.mjs`, then `npm run train` (prints accuracy on held-out phrases and writes `extension/data/intent-model.json`) |
 | A dashboard section | a new `extension/dashboard/views/<name>.js` exporting `{ title, render(el, ctx) }`, registered in `dashboard/app.js` |
 
 ### Publishing to the Chrome Web Store
