@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" data-text-size="large" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Warning – EasyAccess</title>
+  <link rel="stylesheet" href="../shared/base.css">
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
+    .warn { max-width: 44rem; background: var(--surface); border: 5px solid var(--danger); border-radius: 20px; padding: 2rem; box-shadow: var(--shadow); }
+    .warn h1 { color: var(--danger); font-size: 2rem; display: flex; align-items: center; gap: 0.6rem; }
+    .warn h1 svg { width: 2.4rem; height: 2.4rem; }
+    code { word-break: break-all; background: var(--surface-2); padding: 0.2rem 0.4rem; border-radius: 6px; }
+    details { margin-top: 1.5rem; color: var(--text-soft); }
+  </style>
+  <script type="module" src="warning.js"></script>
+</head>
+<body>
+  <main class="warn" role="alert">
+    <p style="font-weight:800;color:var(--brand);margin-bottom:0.3rem">EasyAccess safety check</p>
+    <h1 id="title">Stop — this website looks dangerous</h1>
+    <p>EasyAccess stopped this page from opening because it shows serious warning signs of a scam or fake website.</p>
+    <p>Website: <code id="host"></code></p>
+    <h2>Why</h2>
+    <ul class="reason-list" id="reasons"></ul>
+    <h2>What to do</h2>
+    <ul class="reason-list">
+      <li>Don't type passwords, card numbers or personal details on this website.</li>
+      <li>If a message sent you here, it's probably a scam. Contact the company using its official website or the number on your card.</li>
+    </ul>
+    <div class="btn-row">
+      <button class="btn btn-primary btn-lg" id="close" type="button">Close this page (recommended)</button>
+      <button class="btn btn-lg" id="home" type="button">Go to EasyAccess</button>
+    </div>
+    <details>
+      <summary>I know this website and want to continue</summary>
+      <p>Only continue if you are completely sure this website is safe. EasyAccess won't stop this website again until Chrome is restarted.</p>
+      <button class="btn btn-quiet" id="proceed" type="button">Continue to the website anyway</button>
+    </details>
+  </main>
+</body>
+</html>
