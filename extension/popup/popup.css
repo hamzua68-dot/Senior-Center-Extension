@@ -1,0 +1,24 @@
+html { font-size: 17px; }
+html[data-text-size="small"] { font-size: 16px; }
+html[data-text-size="medium"] { font-size: 17px; }
+html[data-text-size="large"] { font-size: 19px; }
+html[data-text-size="xlarge"] { font-size: 22px; }
+
+body { width: 25rem; max-width: 780px; margin: 0; }
+.pop-header { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1rem; background: var(--surface); border-bottom: 2px solid var(--border); }
+.pop-title { font-weight: 800; font-size: 1.25rem; color: var(--brand); }
+.pop-main { padding: 0.8rem 1rem 1rem; }
+.pop-actions { display: grid; gap: 0.55rem; }
+.pop-actions .btn { justify-content: flex-start; text-align: left; min-height: 3.2rem; width: 100%; font-size: 1.05rem; }
+.pop-actions .btn-help { min-height: 3.8rem; font-size: 1.15rem; }
+.pop-actions .btn-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+.pop-actions .btn-row-2 .btn { font-size: 0.95rem; }
+.site-status { margin-bottom: 0.8rem; }
+.site-status .verdict { padding: 0.7rem 0.8rem; gap: 0.7rem; margin: 0; border-width: 2px; }
+.site-status .verdict-icon { width: 2.2rem; height: 2.2rem; }
+.site-status .verdict-icon svg { width: 1.3rem; height: 1.3rem; }
+.site-status .verdict-title { font-size: 1.05rem; }
+.site-status p { font-size: 0.95rem; margin: 0; }
+#result .verdict { margin-top: 0.8rem; }
+#result .verdict p { font-size: 0.95rem; }
+.small { font-size: 0.9rem; color: var(--text-soft); }

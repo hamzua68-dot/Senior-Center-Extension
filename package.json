@@ -1,0 +1,15 @@
+{
+  "name": "easyaccess",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EasyAccess – a friendly, safe digital companion Chrome extension for older adults.",
+  "scripts": {
+    "test": "node --test tests/engine.test.mjs tests/backend.test.mjs",
+    "test:e2e": "node --test --test-concurrency=1 tests/e2e.test.mjs",
+    "icons": "node tools/make-icons.mjs",
+    "backend": "cd backend && node server.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

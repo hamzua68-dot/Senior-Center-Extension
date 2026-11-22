@@ -1,0 +1,22 @@
+<!doctype html><html lang="en"><head><title>Community Clinic – New patient form</title>
+<meta property="og:site_name" content="Community Clinic"></head>
+<body>
+<header><a href="/">Home</a> <a href="/about">About us</a></header>
+<main>
+<h1>New patient registration</h1>
+<p>Please fill in your details below. Fields marked * are required. We will call you to confirm your first appointment.</p>
+<form action="/register">
+  <label for="n">Full name *</label><input id="n" name="fullname" required>
+  <label for="e">Email</label><input id="e" type="email" name="email">
+  <label for="p">Phone *</label><input id="p" type="tel" name="phone" required>
+  <label for="d">Date of birth</label><input id="d" name="dob">
+  <label for="a">Street address</label><input id="a" name="address">
+  <label><input type="checkbox" name="agree"> I agree to the terms</label>
+  <button type="submit">Submit</button>
+</form>
+<p>Download our <a href="/forms/patient-guide.pdf">patient guide (PDF)</a>.</p>
+</main>
+<div role="dialog" aria-label="Cookies" style="position:fixed;bottom:0;left:0;right:0;background:#eee;padding:10px">
+  <p>We use cookies to improve your experience.</p><button>Accept all</button> <button>Reject all</button>
+</div>
+</body></html>

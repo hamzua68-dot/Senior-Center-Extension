@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en" data-text-size="medium" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EasyAccess</title>
+  <link rel="icon" href="../icons/icon32.png">
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="../engine/scam-engine.js"></script>
+  <script src="../engine/page-explainer.js"></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="app-header">
+    <div class="app-header-inner">
+      <a class="brand" href="#/home" aria-label="EasyAccess home">
+        <img src="../icons/icon48.png" alt="" width="40" height="40">
+        <span class="brand-name">EasyAccess</span>
+      </a>
+      <nav class="header-actions" aria-label="Quick actions">
+        <a class="btn btn-quiet header-btn" href="#/home" id="nav-home"></a>
+        <button class="btn btn-quiet header-btn" type="button" id="nav-bigger"></button>
+        <button class="btn btn-quiet header-btn" type="button" id="nav-read"></button>
+        <a class="btn btn-quiet header-btn" href="#/settings" id="nav-settings"></a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" tabindex="-1">
+    <div class="page" id="view" aria-live="polite"></div>
+  </main>
+  <footer class="app-footer">
+    <p>EasyAccess never clicks, pays or sends anything for you. You are always in control.
+      <a href="#/privacy">Privacy &amp; how EasyAccess works</a></p>
+  </footer>
+</body>
+</html>
