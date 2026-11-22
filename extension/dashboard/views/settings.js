@@ -71,7 +71,7 @@ export default {
           <div class="field"><label for="ai-code">Access code <span class="muted">(if the server has one)</span></label><input id="ai-code" type="text" value="${s.aiAccessCode}" autocomplete="off" spellcheck="false"></div>
           <div class="notice">
             <strong>What gets sent:</strong> only what you choose to ask about — your questions, the words of a message you check, the visible words of a web page, or a screen picture (you'll be asked each time for pictures).
-            EasyAccess never sends what you type into website boxes, and never sends passwords. The server sends the text to Anthropic's Claude AI service to write an answer. Don't include bank numbers or your Social Security number in questions.
+            EasyAccess never sends what you type into website boxes, and never sends passwords. The server sends the text to the AI service it is set up with (Anthropic's Claude or Google's Gemini) to write an answer. Press "Test the connection" to see which one. Don't include bank numbers or your Social Security number in questions.
           </div>
           <label class="choice"><input type="checkbox" id="ai-consent" ${s.aiConsent ? "checked" : ""}> I understand and agree that what I choose to ask about may be sent to the AI helper.</label>
           ${sw("sb", "Check websites against known-danger lists", "Sends website addresses (not page contents) to the helper server to check with Google Safe Browsing.", s.safeBrowsingViaServer)}
@@ -143,7 +143,7 @@ export default {
       try {
         const res = await fetch(new URL("/api/health", url).href, { headers: el.querySelector("#ai-code").value ? { "X-EasyAccess-Code": el.querySelector("#ai-code").value.trim() } : {}, credentials: "omit" });
         const data = await res.json();
-        msg.textContent = res.ok ? `Connected! AI: ${data.ai ? "ready" : "not set up on the server"}. Website threat lists: ${data.safeBrowsing ? "ready" : "not set up on the server"}.` : `The server answered with a problem (${data.error || res.status}).`;
+        msg.textContent = res.ok ? `Connected! AI: ${data.ai ? `ready (${data.provider === "gemini" ? "Google Gemini" : "Anthropic Claude"})` : "not set up on the server"}. Website threat lists: ${data.safeBrowsing ? "ready" : "not set up on the server"}.` : `The server answered with a problem (${data.error || res.status}).`;
       } catch (e) { msg.textContent = "I couldn't reach that server. Check the address and that the server is running."; }
     });
     on(el, "click", "#forget-learning", async () => {

@@ -4,7 +4,7 @@
   "private": true,
   "description": "EasyAccess \u2013 a friendly, safe digital companion Chrome extension for older adults.",
   "scripts": {
-    "test": "node --test tests/engine.test.mjs tests/backend.test.mjs tests/intent.test.mjs",
+    "test": "node --test tests/engine.test.mjs tests/backend.test.mjs tests/backend-gemini.test.mjs tests/intent.test.mjs",
     "test:e2e": "node --test --test-concurrency=1 tests/e2e.test.mjs",
     "icons": "node tools/make-icons.mjs",
     "backend": "cd backend && node server.mjs",

@@ -109,7 +109,7 @@ The **toolbar popup** answers four questions from top to bottom: **(1) which web
                    └──────────────────────────────────────────────────────────────────────┘
                    │ HTTPS (only if the user configures it AND agrees)
                    ▼
-            EasyAccess backend (backend/server.mjs) ── Claude API (AI explanations)
+            EasyAccess backend (backend/server.mjs) ── Claude API or Google Gemini API (AI explanations)
                                                    └─ Google Safe Browsing (threat lists)
 ```
 
