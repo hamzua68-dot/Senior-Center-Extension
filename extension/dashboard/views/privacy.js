@@ -24,7 +24,7 @@ export default {
         </ul></div>
       </div>
       <div class="card"><h2>${ico("chat")} The optional AI helper</h2>
-        <p>The AI helper is off until someone sets up a helper server and you agree. When on, only the things you choose to ask about are sent: your questions, the words of a message you check, the visible words of a page, or a screen picture (you're asked each time). The helper server passes them to Anthropic's Claude AI service to write a reply and does not keep them. AI can make mistakes — EasyAccess's built-in safety checks always run as well.</p></div>
+        <p>The AI helper is off until someone sets up a helper server and you agree. When on, only the things you choose to ask about are sent: your questions, the words of a message you check, the visible words of a page, or a screen picture (you're asked each time). The helper server passes them to the AI service it is set up with — Anthropic's Claude or Google's Gemini — to write a reply, and does not keep them. On Google's free Gemini plan, Google may use what is sent to improve its products, so a paid plan is better for private questions. AI can make mistakes — EasyAccess's built-in safety checks always run as well.</p></div>
       <div class="card"><h2>${ico("shield")} Website threat lists</h2>
         <p>If the helper server is set up with Google Safe Browsing, EasyAccess can send the <strong>address</strong> of a website (not its contents) to check it against lists of known dangerous websites. You can turn this off in Settings.</p></div>
       <div class="card"><h2>${ico("family")} Trusted family help</h2>

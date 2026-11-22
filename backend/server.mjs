@@ -1,6 +1,6 @@
 // EasyAccess helper server — keeps API keys OUT of the browser extension.
 //
-//   AI explanations  → Claude API (ANTHROPIC_API_KEY)
+//   AI explanations  → Claude API (ANTHROPIC_API_KEY)  or  Google Gemini API (GEMINI_API_KEY)
 //   Website threats  → Google Safe Browsing v4 (GOOGLE_SAFE_BROWSING_KEY, optional)
 //
 // Privacy: request bodies are never logged or stored. Only counts and errors are logged.
@@ -8,18 +8,31 @@
 import http from "node:http";
 import { createHash, timingSafeEqual } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI, ApiError as GeminiApiError } from "@google/genai";
 
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || "127.0.0.1";
-const MODEL = process.env.EASYACCESS_MODEL || "claude-opus-5-5";
+const CLAUDE_MODEL = process.env.EASYACCESS_MODEL || "claude-opus-5-5";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 const EFFORT = process.env.EASYACCESS_EFFORT || "low"; // fast, friendly answers; raise for harder questions
 const ACCESS_CODE = process.env.EASYACCESS_ACCESS_CODE || "";
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean);
 const SAFE_BROWSING_KEY = process.env.GOOGLE_SAFE_BROWSING_KEY || "";
 const RATE_PER_MIN = Number(process.env.RATE_LIMIT_PER_MINUTE || 20);
 
-const hasAi = !!(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
-const client = hasAi ? new Anthropic() : null;
+// Which AI service to use: AI_PROVIDER=claude|gemini, or whichever key is present (Claude first).
+const hasClaudeKey = !!(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
+const hasGeminiKey = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+const PROVIDER = (process.env.AI_PROVIDER || (hasClaudeKey ? "claude" : hasGeminiKey ? "gemini" : "")).toLowerCase();
+const hasAi = (PROVIDER === "claude" && hasClaudeKey) || (PROVIDER === "gemini" && hasGeminiKey);
+const MODEL = PROVIDER === "gemini" ? GEMINI_MODEL : CLAUDE_MODEL;
+const client = hasAi && PROVIDER === "claude" ? new Anthropic() : null;
+const gemini = hasAi && PROVIDER === "gemini"
+  ? new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
+    ...(process.env.GEMINI_BASE_URL ? { httpOptions: { baseUrl: process.env.GEMINI_BASE_URL } } : {}),
+  })
+  : null;
 
 // ------------------------------------------------------------------ prompts
 const BASE_SYSTEM = `You are the EasyAccess helper: a patient, warm computer helper for older adults who may have little computer experience.
@@ -125,11 +138,37 @@ function redact(text) {
     .replace(/\b(?:\d[ -]?){13,19}\b/g, "[number removed]");
 }
 
+const REFUSAL_REPLY = "I'm sorry, I can't help with that one. If you're worried about a scam or your safety, please call your bank using the number on your card, or the National Elder Fraud Hotline at 1-833-372-8311.";
+
+/** Send one request to whichever AI service is configured. `content` is a string or Claude-style blocks. */
+async function askAI(task, content, history = []) {
+  if (!hasAi) throw Object.assign(new Error("The AI helper isn't set up on the server (add ANTHROPIC_API_KEY or GEMINI_API_KEY)."), { status: 503 });
+  return PROVIDER === "gemini" ? askGemini(task, content, history) : askClaude(task, content, history);
+}
+
+async function askGemini(task, content, history) {
+  const toParts = (c) => (typeof c === "string" ? [{ text: c }] : c.map((b) => (b.type === "image"
+    ? { inlineData: { mimeType: b.source.media_type, data: b.source.data } }
+    : { text: b.text })));
+  const contents = [
+    ...history.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
+    { role: "user", parts: toParts(content) },
+  ];
+  const response = await gemini.models.generateContent({
+    model: GEMINI_MODEL,
+    contents,
+    config: { systemInstruction: BASE_SYSTEM + (TASKS[task] || "") },
+  });
+  const finish = response.candidates && response.candidates[0] && response.candidates[0].finishReason;
+  if ((response.promptFeedback && response.promptFeedback.blockReason) || finish === "SAFETY" || finish === "PROHIBITED_CONTENT") return REFUSAL_REPLY;
+  const text = (response.text || "").trim();
+  return text || "Sorry, I couldn't think of an answer. Could you ask in a different way?";
+}
+
 async function askClaude(task, content, history = []) {
-  if (!client) throw Object.assign(new Error("The AI helper isn't set up on the server (missing ANTHROPIC_API_KEY)."), { status: 503 });
   const messages = [...history, { role: "user", content }];
   const response = await client.beta.messages.create({
-    model: MODEL,
+    model: CLAUDE_MODEL,
     max_tokens: 16000,
     system: BASE_SYSTEM + (TASKS[task] || ""),
     output_config: { effort: EFFORT },
@@ -137,9 +176,7 @@ async function askClaude(task, content, history = []) {
     fallbacks: "default",
     messages,
   });
-  if (response.stop_reason === "refusal") {
-    return "I'm sorry, I can't help with that one. If you're worried about a scam or your safety, please call your bank using the number on your card, or the National Elder Fraud Hotline at 1-833-372-8311.";
-  }
+  if (response.stop_reason === "refusal") return REFUSAL_REPLY;
   const text = response.content.filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
   return text || "Sorry, I couldn't think of an answer. Could you ask in a different way?";
 }
@@ -181,7 +218,7 @@ async function safeBrowsing(url) {
 
 // ------------------------------------------------------------------ routes
 const ROUTES = {
-  "GET /api/health": async () => ({ ok: true, ai: hasAi, safeBrowsing: !!SAFE_BROWSING_KEY, model: hasAi ? MODEL : null }),
+  "GET /api/health": async () => ({ ok: true, ai: hasAi, provider: hasAi ? PROVIDER : null, safeBrowsing: !!SAFE_BROWSING_KEY, model: hasAi ? MODEL : null }),
 
   "POST /api/chat": async (b) => {
     const msgs = Array.isArray(b.messages) ? b.messages.slice(-12) : [];
@@ -192,12 +229,12 @@ const ROUTES = {
     if (!clean.length || clean[clean.length - 1].role !== "user") throw Object.assign(new Error("No question was sent."), { status: 400 });
     const last = clean.pop();
     const content = b.context ? `About the page I was just looking at (summary from EasyAccess): ${redact(clip(b.context, 3000))}\n\nMy question: ${last.content}` : last.content;
-    return { reply: await askClaude("chat", content, clean) };
+    return { reply: await askAI("chat", content, clean) };
   },
 
   "POST /api/explain-page": async (b) => {
     const q = clip(b.question, 500) || "What am I looking at, and what should I do?";
-    return { reply: await askClaude("explain-page", `${pageToText(b.snapshot)}\n\nThe person asks: ${redact(q)}`) };
+    return { reply: await askAI("explain-page", `${pageToText(b.snapshot)}\n\nThe person asks: ${redact(q)}`) };
   },
 
   "POST /api/explain-screenshot": async (b) => {
@@ -207,7 +244,7 @@ const ROUTES = {
       { type: "image", source: { type: "base64", media_type: m[1], data: m[3] } },
       { type: "text", text: redact(clip(b.question, 500)) || "What is on this screen and what should I do next?" },
     ];
-    return { reply: await askClaude("explain-screenshot", content) };
+    return { reply: await askAI("explain-screenshot", content) };
   },
 
   "POST /api/review-message": async (b) => {
@@ -219,12 +256,12 @@ const ROUTES = {
       `EasyAccess rule-based verdict: ${clip(msg.localVerdict, 10)}`,
       "Message:", clip(msg.text, 12000),
     ].filter(Boolean).join("\n");
-    return { reply: await askClaude("review-message", redact(text)) };
+    return { reply: await askAI("review-message", redact(text)) };
   },
 
   "POST /api/email": async (b) => {
     const task = EMAIL_TASKS[b.task] ? b.task : "summarize";
-    return { reply: await askClaude("email", `${EMAIL_TASKS[task]}\n\n---\n${redact(clip(b.text, 12000))}\n---`) };
+    return { reply: await askAI("email", `${EMAIL_TASKS[task]}\n\n---\n${redact(clip(b.text, 12000))}\n---`) };
   },
 
   "POST /api/check-url": async (b) => {
@@ -259,19 +296,25 @@ const server = http.createServer(async (req, res) => {
     json(res, 200, result, origin);
   } catch (err) {
     // Our own errors carry a status and a friendly message; anything else gets a generic message.
-    const ours = !!err.status && !(err instanceof Anthropic.APIError);
+    const ours = !!err.status && !(err instanceof Anthropic.APIError) && !(err instanceof GeminiApiError);
     let status = err.status || 500;
     let message = ours ? err.message : "The AI helper had a problem. Please try again in a moment.";
     if (err instanceof Anthropic.RateLimitError) { status = 429; message = "The AI helper is very busy. Please try again in a minute."; }
     else if (err instanceof Anthropic.AuthenticationError) { status = 503; message = "The AI helper isn't set up correctly on the server."; }
     else if (err instanceof Anthropic.APIConnectionError) { status = 502; message = "The AI helper couldn't be reached. Please try again."; }
     else if (err instanceof Anthropic.APIError) { status = 502; }
+    else if (err instanceof GeminiApiError) {
+      if (err.status === 429) { status = 429; message = "The AI helper is very busy. Please try again in a minute."; }
+      else if (err.status === 400 && /api key/i.test(err.message) || err.status === 401 || err.status === 403) { status = 503; message = "The AI helper isn't set up correctly on the server (check the Gemini API key)."; }
+      else if (err.status === 404) { status = 503; message = "The AI helper's model name isn't available. Check GEMINI_MODEL on the server."; }
+      else status = 502;
+    }
     console.error(`[${new Date().toISOString()}] ${req.method} ${path} -> ${status}: ${err.name || "Error"} ${ours ? err.message : ""}`);
     json(res, status, { error: message }, origin);
   }
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`EasyAccess helper server on http://${HOST}:${PORT}  (AI: ${hasAi ? MODEL : "off"}, Safe Browsing: ${SAFE_BROWSING_KEY ? "on" : "off"}, access code: ${ACCESS_CODE ? "required" : "none"})`);
+  console.log(`EasyAccess helper server on http://${HOST}:${PORT}  (AI: ${hasAi ? `${PROVIDER} · ${MODEL}` : "off"}, Safe Browsing: ${SAFE_BROWSING_KEY ? "on" : "off"}, access code: ${ACCESS_CODE ? "required" : "none"})`);
   if (!ALLOWED_ORIGINS.length) console.log("Note: ALLOWED_ORIGINS is not set — any Chrome extension may call this server. Set it to chrome-extension://<your-extension-id> in production.");
 });

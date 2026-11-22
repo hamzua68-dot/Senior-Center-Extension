@@ -4,7 +4,7 @@
 
 EasyAccess is a Chrome extension that works like a patient family member sitting beside you: it checks emails, messages and websites for scams, explains what's on your screen in plain English, reads things aloud, teaches everyday computer tasks one step at a time, and guides you calmly if something goes wrong.
 
-It works **immediately after installing — no account, no server, no internet service required**. An optional helper server adds a conversational AI assistant (Claude) and website threat-list checks, while keeping API keys out of the extension.
+It works **immediately after installing — no account, no server, no internet service required**. An optional helper server adds a conversational AI assistant (Claude or Google Gemini — your choice) and website threat-list checks, while keeping API keys out of the extension.
 
 ![EasyAccess home screen](docs/screenshots/02-home.png)
 
@@ -52,7 +52,7 @@ extension/            The Chrome extension (Manifest V3, no build step)
   data/               Lessons, website directory, emergency pathways, glossary, quiz, helper answers,
                       intent-model.json (the trained helper model)
   warning/            Full-page "Stop — this website looks dangerous"
-backend/              Optional helper server (Claude API + Google Safe Browsing)
+backend/              Optional helper server (Claude or Gemini + Google Safe Browsing)
 tests/                Engine, classifier, backend and end-to-end browser tests
 tools/                Model training (train-intents.mjs + intent-data.mjs), icon renderer
 docs/                 Architecture, install, privacy & security, services, testing, screenshots
@@ -70,7 +70,7 @@ docs/                 Architecture, install, privacy & security, services, testi
 
 ```bash
 npm install && (cd backend && npm install)
-npm test            # 33 unit/integration tests
+npm test            # 37 unit/integration tests
 npm run train       # retrain the helper's machine-learning model
 npm run test:e2e    # 21 browser tests with the real extension
 ```

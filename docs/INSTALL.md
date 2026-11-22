@@ -36,7 +36,7 @@ Replace the folder with the new version and click the circular **reload** arrow 
 
 ## 2. Set up the helper server (optional, for AI features)
 
-Requirements: Node.js 18+ and an Anthropic API key (https://console.anthropic.com). A Google Safe Browsing key is optional.
+Requirements: Node.js 20.6+ and an AI key: **either** an Anthropic (Claude) key from https://console.anthropic.com **or** a Google Gemini key from https://aistudio.google.com/apikey. A Google Safe Browsing key is optional.
 
 ```bash
 cd backend
@@ -46,7 +46,10 @@ cp .env.example .env    # then edit .env (never commit it)
 
 | Variable | Required | What it does |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | For AI | Claude API key. Without it, AI endpoints answer "not set up" and the extension keeps using its built-in helper. |
+| `ANTHROPIC_API_KEY` | For AI (option 1) | Claude API key. |
+| `GEMINI_API_KEY` | For AI (option 2) | Google Gemini API key. If the same Google key is also used for Safe Browsing, its API restrictions must allow both "Generative Language API" and "Safe Browsing API". |
+| `AI_PROVIDER` | No | `claude` or `gemini`. Default: Claude if its key is set, otherwise Gemini. Without any AI key, AI endpoints answer "not set up" and the extension keeps using its built-in helper. |
+| `GEMINI_MODEL` | No | Defaults to `gemini-3.8-flash`. |
 | `GOOGLE_SAFE_BROWSING_KEY` | No | Enables known-dangerous-website lookups (Google Safe Browsing v4 Lookup API). |
 | `ALLOWED_ORIGINS` | **Yes in production** | `chrome-extension://<your-extension-id>` — only your installed extension may call the server. Find the ID on `chrome://extensions`. |
 | `EASYACCESS_ACCESS_CODE` | Recommended if the server is public | A shared code entered in EasyAccess Settings. |

@@ -31,7 +31,7 @@ EasyAccess **never** stores passwords, card numbers, bank credentials or Social 
 | Action | Sent to | Sent only when |
 |---|---|---|
 | Scam checks (messages, links, pages) | **Nowhere** — runs locally | — |
-| AI question / explanation / email help | The helper server configured in Settings, which forwards it to Anthropic's Claude API | A server address is set **and** the person ticked the consent box. Screenshots additionally require a confirmation each time. |
+| AI question / explanation / email help | The helper server configured in Settings, which forwards it to the AI service it is configured with (Anthropic Claude or Google Gemini) | A server address is set **and** the person ticked the consent box. Screenshots additionally require a confirmation each time. |
 | Threat-list lookup | Helper server → Google Safe Browsing (website address only) | A server is configured with a Safe Browsing key and the option is on |
 | Sharing with family | The person's own email program (`mailto:`) or clipboard | After reviewing the exact content and ticking "I've checked this" |
 
@@ -41,7 +41,7 @@ The helper server:
 - rejects requests from websites (CORS + `ALLOWED_ORIGINS`), supports an access code, and rate-limits,
 - requires HTTPS from the extension (except `localhost`).
 
-Anthropic's handling of API data is governed by its commercial terms and privacy policy. Operators should review them before deploying.
+Each AI provider's handling of API data is governed by its own terms and privacy policy; operators should review them before deploying. In particular, on Google's free Gemini API tier Google may use submitted content to improve its products, so a paid tier is recommended for real users.
 
 ## Chrome permissions (least privilege)
 

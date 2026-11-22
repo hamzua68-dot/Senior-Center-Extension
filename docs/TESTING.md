@@ -6,7 +6,7 @@
 npm install                 # once, in the project root (Playwright)
 npx playwright install chromium   # once, downloads the browser used by the e2e tests
 (cd backend && npm install) # once, for the backend tests
-npm test                    # scam engine (19) + helper model (7) + backend with a mock Claude API (7)
+npm test                    # scam engine (19) + helper model (7) + backend with mock Claude (7) and Gemini (4) APIs
 npm run test:e2e            # 21 browser tests with the real extension loaded in Chromium
 ```
 
@@ -14,6 +14,7 @@ npm run test:e2e            # 21 browser tests with the real extension loaded in
 |---|---|---|
 | Scam engine | `tests/engine.test.mjs` | Official sites are green; look-alikes, IP addresses, `@` tricks, punycode and program downloads are red; router/local addresses and normal `.html` pages aren't flagged; bank, fake-virus, grandparent, government, delivery, fake-invoice and romance messages are flagged; normal family/library/appointment messages stay green; page analysis spots fake alerts and password forms on look-alike sites. |
 | Helper model | `tests/intent.test.mjs` | The machine-learning classifier understands held-out phrasings it never trained on (≥ 90%; currently 98.6%), typos and vague wording; every common-problem button is understood confidently; off-topic questions are recognised as "not understood"; on-device learning teaches a new phrase without breaking others. |
+| Backend (Gemini) | `tests/backend-gemini.test.mjs` | Requests reach Gemini with the safety instructions, conversation history and screenshots as inline images; the key travels in a header, not the URL; card numbers are removed; Google safety blocks become a kind message. |
 | Backend | `tests/backend.test.mjs` | Request shape sent to Claude (model, fallbacks, effort), redaction of card/SSN numbers, page and screenshot formatting, refusal handling, CORS refusal for websites, input validation. |
 | End-to-end | `tests/e2e.test.mjs` | Loads the extension in Chromium and runs every section plus the senior scenarios below, the link guard, the warning page, the read-aloud bar, the popup, and the extension → helper server → (mock) Claude chain. Fails on any JavaScript error. Screenshots go to `docs/screenshots/` (set `EASYACCESS_SHOTS=0` to skip). |
 

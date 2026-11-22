@@ -5,11 +5,14 @@
   "description": "Optional helper server for the EasyAccess Chrome extension. Keeps AI and threat-intelligence API keys out of the extension.",
   "type": "module",
   "main": "server.mjs",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^1.12.0"
+    "@anthropic-ai/sdk": "^1.12.0",
+    "@google/genai": "^3.6.1"
   }
 }
